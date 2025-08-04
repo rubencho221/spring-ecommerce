@@ -2,16 +2,14 @@ package com.practica.ecommerce.spring_ecommerce.model;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"productos", "ordenes"})
 @Builder
 @Entity
 @Table(name = "usuarios")
