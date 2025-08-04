@@ -1,0 +1,36 @@
+package com.practica.ecommerce.spring_ecommerce.service.impl;
+
+import com.practica.ecommerce.spring_ecommerce.model.Producto;
+import com.practica.ecommerce.spring_ecommerce.repository.ProductoRepository;
+import com.practica.ecommerce.spring_ecommerce.service.ProductoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class ProductoServiceImpl implements ProductoService {
+
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    @Override
+    public Producto save(Producto producto) {
+        return productoRepository.save(producto);
+    }
+
+    @Override
+    public Optional<Producto> get(Integer id) {
+        return productoRepository.findById(id);
+    }
+
+    @Override
+    public void update(Producto producto) {
+        productoRepository.save(producto);
+    }
+
+    @Override
+    public void delete(Integer id) {
+        productoRepository.deleteById(id);
+    }
+}
