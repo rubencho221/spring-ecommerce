@@ -5,7 +5,7 @@ import com.practica.ecommerce.spring_ecommerce.model.Producto;
 
 
 import com.practica.ecommerce.spring_ecommerce.model.Usuario;
-import com.practica.ecommerce.spring_ecommerce.service.ProductoService;
+import com.practica.ecommerce.spring_ecommerce.service.IProductoService;
 import com.practica.ecommerce.spring_ecommerce.service.UploadFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class ProductoController {
     private final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
 
     @Autowired
-    private ProductoService productoService;
+    private IProductoService productoService;
 
     @Autowired
     private UploadFileService upload;
