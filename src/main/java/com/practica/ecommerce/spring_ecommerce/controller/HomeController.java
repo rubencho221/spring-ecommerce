@@ -4,6 +4,8 @@ import com.practica.ecommerce.spring_ecommerce.model.DetalleOrden;
 import com.practica.ecommerce.spring_ecommerce.model.Orden;
 import com.practica.ecommerce.spring_ecommerce.model.Producto;
 import com.practica.ecommerce.spring_ecommerce.model.Usuario;
+import com.practica.ecommerce.spring_ecommerce.service.IDetalleOrdenService;
+import com.practica.ecommerce.spring_ecommerce.service.IOrdenService;
 import com.practica.ecommerce.spring_ecommerce.service.IUsuarioService;
 import com.practica.ecommerce.spring_ecommerce.service.IProductoService;
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +31,12 @@ public class HomeController {
 
     @Autowired
     private IUsuarioService usuarioService;
+
+    @Autowired
+    private IOrdenService ordenService;
+
+    @Autowired
+    private IDetalleOrdenService detalleOrdenService;
 
     // Lista que almacena los detalles de la orden
     List<DetalleOrden> detalles = new ArrayList<DetalleOrden>();
@@ -132,6 +141,33 @@ public class HomeController {
         model.addAttribute("orden", orden);
         model.addAttribute("usuario", usuario);
         return "usuario/resumenorden";
+    }
+
+    // Guardar la Orden
+    @GetMapping("/saveOrder")
+    public String saveOrder() {
+
+        Date fechaCreacion = new Date();
+        orden.setFechaCreacion(fechaCreacion);
+        orden.setNumero(ordenService.generarNumeroOrden());
+
+        // Obtenemos el Usuario
+        Usuario usuario = usuarioService.findById(1).get();
+        orden.setUsuario(usuario);
+
+        ordenService.save(orden);
+
+        // Guardamos Detalles de la Orden
+        for (DetalleOrden dt: detalles) {
+            dt.setOrden(orden);
+            detalleOrdenService.save(dt);
+        }
+
+        // Limpiar Lista y Orden
+        orden = new Orden();
+        detalles.clear();
+
+        return "redirect:/";
     }
 
 }

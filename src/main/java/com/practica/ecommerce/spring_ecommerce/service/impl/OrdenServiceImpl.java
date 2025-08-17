@@ -25,8 +25,8 @@ public class OrdenServiceImpl implements IOrdenService {
         return ordenRepository.save(orden);
     }
 
-    public String generateNumeroOrden() {
-
+    @Override
+    public String generarNumeroOrden() {
         int numero = 0;
         String numeroConcatenado = "";
 
@@ -43,9 +43,8 @@ public class OrdenServiceImpl implements IOrdenService {
             numero ++;
         }
 
-        numeroConcatenado = String.format("%010d", numero);it
+        numeroConcatenado = String.format("%010d", numero);
 
         return numeroConcatenado;
     }
-
 }
