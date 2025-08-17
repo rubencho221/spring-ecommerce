@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/")
@@ -168,6 +169,22 @@ public class HomeController {
         detalles.clear();
 
         return "redirect:/";
+    }
+
+    @PostMapping("/search")
+    public String searchProduct(@RequestParam String nombre, Model model) {
+        log.info("Nombre del producto: {}", nombre);
+
+        // Normaliza el nombre ingresado a minúsculas
+        String nombreProductoNormalizado = nombre.toLowerCase();
+
+        // Obtiene la lista de Productos y filtra por nombre
+        // El Filtro lo realiza ignorando mayúsculas/minúsculas
+        List<Producto> productos = productoService.findAll().stream()
+                .filter(p -> p.getNombre() != null && p.getNombre().toLowerCase().contains(nombreProductoNormalizado))
+                .collect(Collectors.toList());
+        model.addAttribute("productos", productos);
+        return "usuario/home";
     }
 
 }
