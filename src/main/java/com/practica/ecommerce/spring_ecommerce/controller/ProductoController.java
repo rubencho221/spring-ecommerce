@@ -6,7 +6,9 @@ import com.practica.ecommerce.spring_ecommerce.model.Producto;
 
 import com.practica.ecommerce.spring_ecommerce.model.Usuario;
 import com.practica.ecommerce.spring_ecommerce.service.IProductoService;
+import com.practica.ecommerce.spring_ecommerce.service.IUsuarioService;
 import com.practica.ecommerce.spring_ecommerce.service.UploadFileService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class ProductoController {
     @Autowired
     private UploadFileService upload;
 
+    @Autowired
+    private IUsuarioService usuarioService;
+
     @GetMapping("")
     public String show(Model model) {
         model.addAttribute("productos", productoService.findAll());
@@ -43,19 +48,10 @@ public class ProductoController {
     }
 
     @PostMapping("/save")
-    public String save(Producto producto, @RequestParam("img") MultipartFile file) throws IOException {
+    public String save(Producto producto, @RequestParam("img") MultipartFile file, HttpSession session) throws IOException {
         LOGGER.info("Este es el objeto producto {}", producto);
 
-        Usuario user = Usuario.builder()
-                .id(1)
-                .nombre("")
-                .username("")
-                .email("")
-                .direccion("")
-                .telefono("")
-                .tipo("")
-                .password("")
-                .build();
+        Usuario user = usuarioService.findById(Integer.parseInt(session.getAttribute("idusuario").toString())).get();
 
         producto.setUsuario(user);
 

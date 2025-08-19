@@ -8,6 +8,7 @@ import com.practica.ecommerce.spring_ecommerce.service.IDetalleOrdenService;
 import com.practica.ecommerce.spring_ecommerce.service.IOrdenService;
 import com.practica.ecommerce.spring_ecommerce.service.IUsuarioService;
 import com.practica.ecommerce.spring_ecommerce.service.IProductoService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -46,7 +44,10 @@ public class HomeController {
     Orden orden = new Orden();
 
     @GetMapping("")
-    public String home(Model model) {
+    public String home(Model model, HttpSession session) {
+
+        log.info("Sesion del usuario: {}", session.getAttribute("idusuario"));
+
         model.addAttribute("productos", productoService.findAll());
         return "usuario/home";
     }
@@ -68,32 +69,37 @@ public class HomeController {
     @PostMapping("/cart")
     public String addCart(@RequestParam Integer id, Integer cantidad, Model model) {
 
-        DetalleOrden detalleOrden = new DetalleOrden();
-        Producto producto = new Producto();
-        double sumaTotal = 0;
+        Producto producto = productoService.get(id).orElse(null);
+        if (producto == null) {
+            log.warn("Producto con ID {} no encontrado", id);
+            return "redirect:/";
+        }
 
-        Optional<Producto> optionalProducto = productoService.get(id);
-        log.info("Producto añadido: {}", optionalProducto.get());
-        log.info("Cantidad: {}", cantidad);
-        producto = optionalProducto.get();
+        // Verificar si el producto ya está en el carrito
+        Optional<DetalleOrden> existente = detalles.stream()
+                .filter(p -> p.getProducto().getId().equals(id))
+                .findFirst();
 
-        detalleOrden.setCantidad(cantidad);
-        detalleOrden.setPrecio(producto.getPrecio());
-        detalleOrden.setNombre(producto.getNombre());
-        detalleOrden.setTotal(producto.getPrecio() * cantidad);
-        detalleOrden.setProducto(producto);
-
-        // Validar que el mismo producto no se cargue dos veces en la lista
-        Integer idProducto = producto.getId();
-        boolean ingresado = detalles.stream().anyMatch(p -> p.getProducto().getId() == idProducto);
-
-        if (!ingresado) {
+        if (existente.isPresent()) {
+            // Si ya existe, actualizamos la cantidad y el total
+            DetalleOrden detalleExistente = existente.get();
+            detalleExistente.setCantidad(detalleExistente.getCantidad() + cantidad);
+            detalleExistente.setTotal(detalleExistente.getCantidad() * detalleExistente.getPrecio());
+        } else {
+            // Si no existe, lo agregamos nuevo
+            DetalleOrden detalleOrden = new DetalleOrden();
+            detalleOrden.setCantidad(cantidad);
+            detalleOrden.setPrecio(producto.getPrecio());
+            detalleOrden.setNombre(producto.getNombre());
+            detalleOrden.setTotal(producto.getPrecio() * cantidad);
+            detalleOrden.setProducto(producto);
             detalles.add(detalleOrden);
         }
 
-        sumaTotal = detalles.stream().mapToDouble(dt -> dt.getTotal()).sum();
-
+        // Recalcular el total de la orden
+        double sumaTotal = detalles.stream().mapToDouble(dt -> dt.getTotal()).sum();
         orden.setTotal(sumaTotal);
+
         model.addAttribute("cart", detalles);
         model.addAttribute("orden", orden);
 
@@ -134,9 +140,9 @@ public class HomeController {
     }
 
     @GetMapping("/order")
-    public String order(Model model) {
+    public String order(Model model, HttpSession session) {
 
-        Usuario usuario = usuarioService.findById(1).get();
+        Usuario usuario = usuarioService.findById( Integer.parseInt(session.getAttribute("idusuario").toString()) ).get();
 
         model.addAttribute("cart", detalles);
         model.addAttribute("orden", orden);
@@ -144,27 +150,32 @@ public class HomeController {
         return "usuario/resumenorden";
     }
 
-    // Guardar la Orden
     @GetMapping("/saveOrder")
-    public String saveOrder() {
-
+    public String saveOrder(HttpSession session) {
         Date fechaCreacion = new Date();
-        orden.setFechaCreacion(fechaCreacion);
-        orden.setNumero(ordenService.generarNumeroOrden());
+        Orden nuevaOrden = new Orden();
+        nuevaOrden.setFechaCreacion(fechaCreacion);
+        nuevaOrden.setNumero(ordenService.generarNumeroOrden());
 
-        // Obtenemos el Usuario
-        Usuario usuario = usuarioService.findById(1).get();
-        orden.setUsuario(usuario);
+        Integer idUsuario = Integer.parseInt(session.getAttribute("idusuario").toString());
+        Usuario usuario = usuarioService.findById(idUsuario).orElse(null);
+        if (usuario == null) {
+            log.warn("Usuario no encontrado con ID: {}", idUsuario);
+            return "redirect:/error";
+        }
+        nuevaOrden.setUsuario(usuario);
+        nuevaOrden.setTotal(orden.getTotal());
 
-        ordenService.save(orden);
+        // Guardar orden primero
+        ordenService.save(nuevaOrden);
 
-        // Guardamos Detalles de la Orden
-        for (DetalleOrden dt: detalles) {
-            dt.setOrden(orden);
+        // Guardar detalles de la orden
+        for (DetalleOrden dt : detalles) {
+            dt.setOrden(nuevaOrden);
             detalleOrdenService.save(dt);
         }
 
-        // Limpiar Lista y Orden
+        // Limpiar carrito y orden en memoria
         orden = new Orden();
         detalles.clear();
 
