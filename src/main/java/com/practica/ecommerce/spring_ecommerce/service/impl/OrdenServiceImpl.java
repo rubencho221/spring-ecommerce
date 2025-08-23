@@ -1,6 +1,7 @@
 package com.practica.ecommerce.spring_ecommerce.service.impl;
 
 import com.practica.ecommerce.spring_ecommerce.model.Orden;
+import com.practica.ecommerce.spring_ecommerce.model.Usuario;
 import com.practica.ecommerce.spring_ecommerce.repository.IOrdenRepository;
 import com.practica.ecommerce.spring_ecommerce.service.IOrdenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,5 +47,10 @@ public class OrdenServiceImpl implements IOrdenService {
         numeroConcatenado = String.format("%010d", numero);
 
         return numeroConcatenado;
+    }
+
+    @Override
+    public List<Orden> findByUsuario(Usuario usuario) {
+        return ordenRepository.findByUsuario(usuario);
     }
 }
