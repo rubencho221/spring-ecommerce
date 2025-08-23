@@ -22,44 +22,46 @@
 <body>
 
   <!-- Navigation -->
-  <div th:include="usuario/template_usuario.html::header"></div>
+  <div th:if="${sesion==null}" th:include="usuario/template_usuario.html::header"></div>
 
-    <!-- Page Content -->
-    <div class="container">
+  <div th:unless="${sesion==null}" th:include="usuario/template_usuario.html::header-user"></div>
 
-      <!-- Jumbotron Header -->
-      <header class="jumbotron my-4">
-        <h1 class="display-3">Bienvenido a Spring Ecommerce 2021</h1>
-        <p class="lead">Tu tienda de productos en Línea</p>
-      </header>
+  <!-- Page Content -->
+  <div class="container">
 
-      <!-- Page Features -->
-      <div class="row text-center">
+    <!-- Jumbotron Header -->
+    <header class="jumbotron my-4">
+      <h1 class="display-3">Bienvenido a Spring Ecommerce 2021</h1>
+      <p class="lead">Tu tienda de productos en Línea</p>
+    </header>
 
-        <div class="col-lg-3 col-md-6 mb-4" th:each="producto: ${productos}">
-          <div class="card h-100">
-            <img class="card-img-top" th:src="@{/images/{img} (img=${producto.imagen})}" alt="">
-            <div class="card-body">
-              <p class="card-text" th:text="${producto.nombre}"></p>
-            </div>
-            <div class="card-footer">
-              <a th:href="@{/productohome/{id} (id=${producto.id}) }" class="btn btn-success">Ver producto</a>
-            </div>
+    <!-- Page Features -->
+    <div class="row text-center">
+
+      <div class="col-lg-3 col-md-6 mb-4" th:each="producto: ${productos}">
+        <div class="card h-100">
+          <img class="card-img-top" th:src="@{/images/{img} (img=${producto.imagen})}" alt="">
+          <div class="card-body">
+            <p class="card-text" th:text="${producto.nombre}"></p>
+          </div>
+          <div class="card-footer">
+            <a th:href="@{/productohome/{id} (id=${producto.id}) }" class="btn btn-success">Ver producto</a>
           </div>
         </div>
-
       </div>
-      <!-- /.row -->
 
     </div>
-    <!-- /.container -->
+    <!-- /.row -->
 
-    <!-- Footer -->
-    <div th:include="usuario/template_usuario.html::footer"></div>
+  </div>
+  <!-- /.container -->
 
-    <!-- Bootstrap core JavaScript -->
-    <script th:src="@{vendor/jquery/jquery.min.js}"></script>
-    <script th:src="@{vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <!-- Footer -->
+  <div th:include="usuario/template_usuario.html::footer"></div>
+
+  <!-- Bootstrap core JavaScript -->
+  <script th:src="@{vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
 
   </body>
 
